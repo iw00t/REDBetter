@@ -38,6 +38,9 @@ MANIFEST
 # IntelliJ
 /out/
 
+# Sublime
+*.sublime-*
+
 # mpeltonen/sbt-idea plugin
 .idea_modules/
 

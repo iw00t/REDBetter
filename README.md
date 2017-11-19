@@ -1,144 +1,86 @@
-Introduction
-------------
+## Introduction
+`redactedbetter` is a script which searches your torrent download directory for any FLAC torrents which do not have transcodes, then automatically transcodes and uploads the torrents to redacted.ch.
 
-whatbetter is a script which automatically transcodes and uploads these
-files to What.CD.
+## Installation
+### Dependencies
+* Python 2.7 or newer
+* `mechanize`, `mutagen`, and `requests` Python modules. You can install these with `pip install -r requirements.txt`. Depending on your user priveleges, you may need to use `sudo`, so try: `sudo -H pip install -r requirements.txt`
+* `lame`, `sox`, and `flac`. These should all be available on your package manager of choice:
+  * Ubuntu: `sudo apt install lame sox flac`
+  * macOS: `brew install lame sox flac`
+* [`mktorrent`](https://github.com/Rudde/mktorrent): Just installing it with a package manager won't do in this case. We need to build it from source, because otherwise an option that we need is not enabled. For Linux systems, run the following commands in a temporary directory:
 
-The following command will scan through every FLAC you have ever
-downloaded (if it is in , determine which formats are needed, transcode the FLAC to
-each needed format, and upload each format to What.CD -- automatically.
+~~~~
+$> git clone git@github.com:Rudde/mktorrent.git
+$> cd mktorrent
+$> make && sudo make install
+~~~~
 
-    $ whatbetter
+If you are on a seedbox and you lack the privileges to install packages, you are best off contacting your seedbox provider and asking them to install the listed packages.
 
-Installation
-------------
+### Configuration
+Run `redactedbetter` by running the script included when you cloned the repository:
 
-You're going to need to install a few dependencies before using
-whatbetter.
+    $> ./redactedbetter
 
-First and foremost, you will need Python 2.7 or newer.
+You will receive a notification stating that you should edit the configuration file located at:
 
-Once you've got Python installed, you will need a few modules: mechanize,
-mutagen, and requests. Try this:
+    ~/.redactedbetter/config
 
-    $ pip install -r requirements.txt
+Open this file in your preferred text editor, and configure as desired. The options are as follows:
+* `username`: Your redacted.ch username.
+* `password`: Your redacted.ch password.
+* `data_dir`: The directory where your torrent downloads are stored.
+* `output_dir`: The directory where the transcoded torrent files will be stored. If left blank, it will use the value of `data_dir`.
+* `torrent_dir`: The directory where the generated `.torrent` files are stored.
+* `formats`: A comma space (`, `) separated list of formats you'd like to transcode to. By default, this will be `flac, v0, 320`. `flac` is included because `redactedbetter` supports converting 24-bit FLAC to 16-bit FLAC. Note that `v2` is not included deliberately - v0 torrents trump v2 torrents per redacted rules.
+* `media`: A comma space (`, `) separated list of media types you want to consider for transcoding. The default value is all redacted lossless formats, but if you want to transcode only CD and vinyl media, for example, you would set this to `cd, vinyl`.
+* `24bit_behaviour`: Defines what happens when the program encounters a FLAC that it thinks is 24-bit. If it is set to `2`, every FLAC that has a bit depth of 24 will be silently re-categorized. If it is set to `1`, a prompt wil appear. The default is `0` which ignores these occurrences.
 
-	
-If you are on a seedbox, or a system without root priviliages, try this:
-
-
-    $ pip install --user -r requirements.txt
-
-
-Alternatively, if you have setuptools installed, you can do this (in the
-source directory):
-
-    $ python setup.py install
-
-This should theoretically install all required dependencies
-automatically.
-
-Furthermore, you need several external programs: mktorrent, flac,
-lame, and sox. The method of installing these programs varies
-depending on your operating system, but if you're using something like
-Ubuntu you can do this:
-
-    # aptitude install mktorrent flac lame sox
-	
-
-If you are on a seedbox and you lack the privilages to install packages,
-you could contact your provider to have these packages installed.
-
-At this point you may execute the following command:
-
-    $ whatbetter
-
-And you will receive a notification stating that you should edit the
-configuration file \~/.whatbetter/config (if you're lucky).
-
-Configuration
--------------
-
-You've made it far! Congratulations. Open up the file
-\~/.whatbetter/config in a text editor. You're going to see something
-like this:
-
-    [whatcd]
-    username =
-    password = 
-    data_dir =
-    output_dir =
-    torrent_dir =
-    formats = flac, v0, 320, v2
-    media = sacd, soundboard, web, dvd, cd, dat, vinyl, blu-ray
-    24bit_behaviour = 0
-
-`username` and `password` are your What.CD login credentials. 
-`data_dir` is the directory where your downloads are stored. 
-`output_dir` is the directory where your transcodes will be created. If
-the value is blank, `data_dir` will be used.
-`torrent_dir` is the directory where torrents should be created (e.g.,
-your watch directory). `formats` is a list of formats that you'd like to
-support (so if you don't want to upload V2, just remove it from this
-list).
-`media` is a list of lossless media types you want to consider for
-transcoding. The default value is all What.CD lossless formats, but if
-you want to transcode only CD and vinyl media, for example, you would
-set this to 'cd, vinyl'.
-`24bit_behaviour` defines what happens when the program encounters a FLAC 
-that it thinks is 24bits. If it is set to '2', every FLAC that has a bits-
-per-sample property of 24 will be silently re-categorized. If it set to '1',
-a prompt will appear. The default is '0' which ignores these occurrences.
-
-You should end up with something like this:
-
-    [whatcd]
-    username = RequestBunny
-    password = clapton
-    data_dir = /srv/downloads
-    output_dir =
-    torrent_dir = /srv/torrents
-    formats = flac, v0, 320
-    media = cd, vinyl, web
-    24bit_behaviour = 0
-
-Alright! Now you're ready to use whatbetter.
-
-Usage
------
-
-    usage: whatbetter [-h] [-s] [--config CONFIG] [--cache CACHE]
+## Usage
+~~~~
+usage: redactedbetter [-h] [-s] [-j THREADS] [--config CONFIG] [--cache CACHE]
+                      [-U] [-E] [--version]
                       [release_urls [release_urls ...]]
 
-    positional arguments:
-      release_urls     the URL where the release is located
+positional arguments:
+  release_urls          the URL where the release is located (default: None)
 
-    optional arguments:
-      -h, --help       show this help message and exit
-      -s, --single     only add one format per release (useful for getting unique
-                       groups)
-      --config CONFIG  the location of the configuration file (default:
-                       ~/.whatbetter/config)
-      --cache CACHE    the location of the cache (default: ~/.whatbetter/cache)
+optional arguments:
+  -h, --help            show this help message and exit
+  -s, --single          only add one format per release (useful for getting
+                        unique groups) (default: False)
+  -j THREADS, --threads THREADS
+                        number of threads to use when transcoding (default: 3)
+  --config CONFIG       the location of the configuration file (default:
+                        /home/taylor/.redactedbetter/config)
+  --cache CACHE         the location of the cache (default:
+                        /home/taylor/.redactedbetter/cache)
+  -U, --no-upload       don't upload new torrents (in case you want to do it
+                        manually) (default: False)
+  -E, --no-24bit-edit   don't try to edit 24-bit torrents mistakenly labeled
+                        as 16-bit (default: False)
+  --version             show program's version number and exit
+~~~~
 
-Examples
---------
+### Examples
 
-To transcode and upload every snatch you've ever downloaded (this may
-take a while):
+To transcode and upload everything you have in your download directory (it could take a while):
 
-    $ whatbetter
+    $> ./redactedbetter
 
-To transcode and upload a specific release (provided you have already
-downloaded the FLAC and it is located in your `data_dir`):
+To transcode and upload a specific release (provided you have already downloaded the FLAC and it is located in your `data_dir`):
 
-    $ whatbetter http://what.cd/torrents.php?id=1000\&torrentid=1000000
+    $> ./redactedbetter http://redacted.ch/torrents.php?id=1000\&torrentid=1000000
 
-Note that if you specify a particular release(s), whatbetter will
-ignore your configuration's media types and attempt to transcode the
-releases you have specified regardless of their media type (so long as
-they are lossless types).
+Note that if you specify a particular release, redactedbetter will ignore your configuration's media types and attempt to transcode the releases you have specified regardless of their media type (so long as they are lossless types).
 
-Your first time running whatbetter might take a while, but after it has
-successfully gone through and checked everything, it'll go faster any
-consecutive runs due to it's caching method.
+redactedbetter caches the results of your transcodes, and will skip any transcodes it believes it's already finished. This makes subsequent runs much faster than the first, especially with large download directories. However, if you do run into errors when running the script, sometimes you will find that the cache thinks the torrent it crashed on previously was uploaded - so it skips it. A solution would be to manually specify the release as mentioned above. If you have multiple issues like this, you can remove the cache:
+
+    $> ./redactedbetter ~/.redactedbetter/cache
+
+Beware though, this will cause the script to re-check every download as it does on the first run.
+
+## Bugs and feature requests
+
+If you have any issues using the script, or would like to suggest a feature, feel free to open an issue in the issue tracker, *provided that you have searched for similar issues already*.

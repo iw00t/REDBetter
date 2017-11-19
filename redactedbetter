@@ -11,12 +11,12 @@ from multiprocessing import cpu_count
 
 import tagging
 import transcode
-import whatapi
+import redactedapi
 from _version import __version__
 
 
 def banner():
-    return 'Created with version of whatbetter-crawler 1.3. Maintained by Mechazawa\n' \
+    return 'Created with version of redactedbetter-crawler 1.3. Maintained by Mechazawa\n' \
            'This transcoding was done by an autonomous system'
 
 def create_description(torrent, flac_dir, format, permalink):
@@ -46,21 +46,21 @@ def formats_needed(group, torrent, supported_formats):
 
     others = filter(same_group, group['torrents'])
     current_formats = set((t['format'], t['encoding']) for t in others)
-    missing_formats = [format for format, details in [(f, whatapi.formats[f]) for f in supported_formats]\
+    missing_formats = [format for format, details in [(f, redactedapi.formats[f]) for f in supported_formats]\
                            if (details['format'], details['encoding']) not in current_formats]
-    allowed_formats = whatapi.allowed_transcodes(torrent)
+    allowed_formats = redactedapi.allowed_transcodes(torrent)
     return [format for format in missing_formats if format in allowed_formats]
 
 def main():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, prog='whatbetter')
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, prog='redactedbetter')
     parser.add_argument('release_urls', nargs='*', help='the URL where the release is located')
     parser.add_argument('-s', '--single', action='store_true', help='only add one format per release (useful for getting unique groups)')
     parser.add_argument('-j', '--threads', type=int, help='number of threads to use when transcoding',
             default=max(cpu_count() - 1, 1))
     parser.add_argument('--config', help='the location of the configuration file', \
-            default=os.path.expanduser('~/.whatbetter/config'))
+            default=os.path.expanduser('~/.redactedbetter/config'))
     parser.add_argument('--cache', help='the location of the cache', \
-            default=os.path.expanduser('~/.whatbetter/cache'))
+            default=os.path.expanduser('~/.redactedbetter/cache'))
     parser.add_argument('-U', '--no-upload', action='store_true', help='don\'t upload new torrents (in case you want to do it manually)')
     parser.add_argument('-E', '--no-24bit-edit', action='store_true', help='don\'t try to edit 24-bit torrents mistakenly labeled as 16-bit')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
@@ -74,49 +74,49 @@ def main():
     except:
         if not os.path.exists(os.path.dirname(args.config)):
             os.makedirs(os.path.dirname(args.config))
-        config.add_section('whatcd')
-        config.set('whatcd', 'username', '')
-        config.set('whatcd', 'password', '')
-        config.set('whatcd', 'data_dir', '')
-        config.set('whatcd', 'output_dir', '')
-        config.set('whatcd', 'torrent_dir', '')
-        config.set('whatcd', 'formats', 'flac, v0, 320, v2')
-        config.set('whatcd', 'media', ', '.join(whatapi.lossless_media))
-        config.set('whatcd', '24bit_behaviour','0')
+        config.add_section('redacted')
+        config.set('redacted', 'username', '')
+        config.set('redacted', 'password', '')
+        config.set('redacted', 'data_dir', '')
+        config.set('redacted', 'output_dir', '')
+        config.set('redacted', 'torrent_dir', '')
+        config.set('redacted', 'formats', 'flac, v0, 320')
+        config.set('redacted', 'media', ', '.join(redactedapi.lossless_media))
+        config.set('redacted', '24bit_behaviour','0')
         config.write(open(args.config, 'w'))
         print 'Please edit the configuration file: %s' % args.config
         sys.exit(2)
     finally:
-        username = config.get('whatcd', 'username')
-        password = config.get('whatcd', 'password')
-        do_24_bit = config.get('whatcd', '24bit_behaviour')
-        data_dir = os.path.expanduser(config.get('whatcd', 'data_dir'))
+        username = config.get('redacted', 'username')
+        password = config.get('redacted', 'password')
+        do_24_bit = config.get('redacted', '24bit_behaviour')
+        data_dir = os.path.expanduser(config.get('redacted', 'data_dir'))
         try:
-            output_dir = os.path.expanduser(config.get('whatcd', 'output_dir'))
+            output_dir = os.path.expanduser(config.get('redacted', 'output_dir'))
         except ConfigParser.NoOptionError:
             output_dir = None
         if not output_dir:
             output_dir = data_dir
-        torrent_dir = os.path.expanduser(config.get('whatcd', 'torrent_dir'))
-        supported_formats = [format.strip().upper() for format in config.get('whatcd', 'formats').split(',')]
+        torrent_dir = os.path.expanduser(config.get('redacted', 'torrent_dir'))
+        supported_formats = [format.strip().upper() for format in config.get('redacted', 'formats').split(',')]
 
         try:
-            media_config = config.get('whatcd', 'media')
+            media_config = config.get('redacted', 'media')
             if not media_config:
-                supported_media = whatapi.lossless_media
+                supported_media = redactedapi.lossless_media
             else:
                 supported_media = set([medium.strip().lower() for medium in media_config.split(',')])
-                if not supported_media.issubset(set(whatapi.lossless_media)):
-                    print 'Unsupported media type "%s", edit your configuration' % (supported_media - whatapi.lossless_media).pop()
-                    print 'Supported types are:', ', '.join(whatapi.lossless_media)
+                if not supported_media.issubset(set(redactedapi.lossless_media)):
+                    print 'Unsupported media type "%s", edit your configuration' % (supported_media - redactedapi.lossless_media).pop()
+                    print 'Supported types are:', ', '.join(redactedapi.lossless_media)
                     sys.exit(2)
         except ConfigParser.NoOptionError:
-            supported_media = whatapi.lossless_media
+            supported_media = redactedapi.lossless_media
 
     upload_torrent = not args.no_upload
 
     print 'Logging in to PTH...'
-    api = whatapi.WhatAPI(username, password)
+    api = redactedapi.RedactedAPI(username, password)
 
     try:
         seen = pickle.load(open(args.cache))
@@ -136,25 +136,25 @@ def main():
         group = api.request('torrentgroup', id=groupid)
         torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
 
-        release = "Release found: %s (%s)" % (whatapi.unescape(group['group']['name']), group['group']['year'])
+        release = "Release found: %s (%s)" % (redactedapi.unescape(group['group']['name']), group['group']['year'])
         releaseurl = "Release URL: %s" % api.release_url(group, torrent)
-        
+
         print
         print release.encode("utf-8")
         print releaseurl.encode("utf-8")
 
         if not torrent['filePath']:
-            flac_file = os.path.join(data_dir, whatapi.unescape(torrent['fileList']).split('{{{')[0])
+            flac_file = os.path.join(data_dir, redactedapi.unescape(torrent['fileList']).split('{{{')[0])
             if not os.path.exists(flac_file):
                 print "Path not found - skipping: %s" % flac_file
                 continue
             flac_dir = os.path.join(data_dir, "%s (%s) [FLAC]" % (
-            whatapi.unescape(group['group']['name']), group['group']['year']))
+            redactedapi.unescape(group['group']['name']), group['group']['year']))
             if not os.path.exists(flac_dir):
                 os.makedirs(flac_dir)
             shutil.copy(flac_file, flac_dir)
         else:
-            flac_dir = os.path.join(data_dir, whatapi.unescape(torrent['filePath']))
+            flac_dir = os.path.join(data_dir, redactedapi.unescape(torrent['filePath']))
 
         flac_dir = flac_dir.encode(sys.getfilesystemencoding())
         if int(do_24_bit):
@@ -167,7 +167,7 @@ def main():
                     if args.no_24bit_edit:
                         print "Release is actually 24-bit lossless, skipping."
                         continue
-                    if int(do_24_bit) == 1:  
+                    if int(do_24_bit) == 1:
                         confirmation = raw_input("Mark release as 24bit lossless? y/n: ")
                         if confirmation != 'y':
                             continue

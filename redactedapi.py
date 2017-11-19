@@ -45,7 +45,7 @@ formats = {
         'encoding' : '320'
     },
     'V2': {
-        'format' : 'MP3', 
+        'format' : 'MP3',
         'encoding' : 'V2 (VBR)'
     },
 }
@@ -64,7 +64,7 @@ class LoginException(Exception):
 class RequestException(Exception):
     pass
 
-class WhatAPI:
+class RedactedAPI:
     def __init__(self, username=None, password=None):
         self.session = requests.Session()
         self.session.headers.update(headers)
@@ -124,7 +124,7 @@ class WhatAPI:
         r = self.session.get(ajaxpage, params=kwargs, allow_redirects=False)
         self.last_request = time.time()
         return r.content
-    
+
     def get_artist(self, id=None, format='MP3', best_seeded=True):
         res = self.request('artist', id=id)
         torrentgroups = res['torrentgroup']
