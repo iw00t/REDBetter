@@ -11,7 +11,7 @@ from cStringIO import StringIO
 headers = {
     'Connection': 'keep-alive',
     'Cache-Control': 'max-age=0',
-    'User-Agent': 'PTHBetter crawler',
+    'User-Agent': 'REDBetter crawler',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Encoding': 'gzip,deflate,sdch',
     'Accept-Language': 'en-US,en;q=0.8',
