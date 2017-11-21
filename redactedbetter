@@ -115,7 +115,7 @@ def main():
 
     upload_torrent = not args.no_upload
 
-    print 'Logging in to PTH...'
+    print 'Logging in to RED...'
     api = redactedapi.RedactedAPI(username, password)
 
     try:
