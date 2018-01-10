@@ -98,8 +98,11 @@ def is_multichannel(flac_dir):
     '''
     Returns True if any FLAC within flac_dir is multichannel.
     '''
-    flacs = (mutagen.flac.FLAC(flac_file) for flac_file in locate(flac_dir, ext_matcher('.flac')))
-    return any(flac.info.channels > 2 for flac in flacs)
+    try:
+        flacs = (mutagen.flac.FLAC(flac_file) for flac_file in locate(flac_dir, ext_matcher('.flac')))
+        return any(flac.info.channels > 2 for flac in flacs)
+    except:
+        return False
 
 def needs_resampling(flac_dir):
     '''
