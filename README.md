@@ -1,4 +1,13 @@
 ## Introduction
+### WARNING
+Running this script violates Redacted's Golden Rules: 
+
+>* **Do not abuse automated site access.**
+>>All automated site access must be done through the API. API use is limited to 5 requests within any 10-second window. Scripts and other automated processes must not scrape the site's HTML pages."
+
+Proceed at your own risk.
+
+---
 `redactedbetter` is a script which searches your torrent download directory for any FLAC torrents which do not have transcodes, then automatically transcodes and uploads the torrents to redacted.ch.
 
 ## Installation
