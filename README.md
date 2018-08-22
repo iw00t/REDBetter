@@ -1,6 +1,4 @@
 ## Introduction
-### WARNING
-Running this script violates Redacted's Golden Rules: 
 
 >* **Do not abuse automated site access.**
 >>All automated site access must be done through the API. API use is limited to 5 requests within any 10-second window. Scripts and other automated processes must not scrape the site's HTML pages."
