@@ -29,7 +29,7 @@ class TranscodeDownmixException(TranscodeException):
 
 class UnknownSampleRateException(TranscodeException):
     pass
-    
+
 # In most Unix shells, pipelines only report the return code of the
 # last process. We need to know if any process in the transcode
 # pipeline fails, not just the last one.
@@ -337,7 +337,7 @@ def transcode_release(flac_dir, output_dir, output_format, max_threads=None):
         shutil.rmtree(transcode_dir)
         raise
 
-def make_torrent(input_dir, output_dir, tracker, passkey):
+def make_torrent(input_dir, output_dir, tracker, passkey, piece_length):
     torrent = os.path.join(output_dir, os.path.basename(input_dir)) + ".torrent"
     if not os.path.exists(os.path.dirname(torrent)):
         os.path.makedirs(os.path.dirname(torrent))
@@ -345,7 +345,7 @@ def make_torrent(input_dir, output_dir, tracker, passkey):
         'tracker' : tracker,
         'passkey' : passkey,
     }
-    command = ["mktorrent", "-s", "RED", "-p", "-a", tracker_url, "-o", torrent, input_dir]
+    command = ["mktorrent", "-s", "RED", "-p", "-a", tracker_url, "-o", torrent, "-l", piece_length, input_dir]
     subprocess.check_output(command, stderr=subprocess.STDOUT)
     return torrent
 

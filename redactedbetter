@@ -83,6 +83,7 @@ def main():
         config.set('redacted', 'formats', 'flac, v0, 320')
         config.set('redacted', 'media', ', '.join(redactedapi.lossless_media))
         config.set('redacted', '24bit_behaviour','0')
+        config.set('redacted', 'piece_length', '18')
         config.write(open(args.config, 'w'))
         print 'Please edit the configuration file: %s' % args.config
         sys.exit(2)
@@ -208,7 +209,7 @@ def main():
                 tmpdir = tempfile.mkdtemp()
                 try:
                     transcode_dir = transcode.transcode_release(flac_dir, output_dir, format, max_threads=args.threads)
-                    new_torrent = transcode.make_torrent(transcode_dir, tmpdir, api.tracker, api.passkey)
+                    new_torrent = transcode.make_torrent(transcode_dir, tmpdir, api.tracker, api.passkey, config.get('redacted', 'piece_length'))
                     if upload_torrent:
                         permalink = api.permalink(torrent)
                         description = create_description(torrent, flac_dir, format, permalink)
