@@ -180,13 +180,12 @@ class RedactedAPI:
         forms = mechanize.ParseFile(StringIO(response.text.encode('utf-8')), url)
         form = forms[-1]
         form.find_control('file_input').add_file(open(new_torrent), 'application/x-bittorrent', os.path.basename(new_torrent))
-        if torrent['remastered']:
-            form.find_control('remaster').set_single('1')
-            form['remaster_year'] = str(torrent['remasterYear'])
-            form['remaster_title'] = torrent['remasterTitle']
-            form['remaster_record_label'] = torrent['remasterRecordLabel']
-            form['remaster_catalogue_number'] = torrent['remasterCatalogueNumber']
-
+        #if torrent['remastered']:
+        #    form.find_control('remaster').set_single('1')
+        form['remaster_year'] = str(torrent['remasterYear'])
+        form['remaster_title'] = torrent['remasterTitle']
+        form['remaster_record_label'] = torrent['remasterRecordLabel']
+        form['remaster_catalogue_number'] = torrent['remasterCatalogueNumber']
         form.find_control('format').set('1', formats[format]['format'])
         form.find_control('bitrate').set('1', formats[format]['encoding'])
         form.find_control('media').set('1', torrent['media'])
