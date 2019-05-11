@@ -207,8 +207,14 @@ def main():
                 print 'Adding format %s...' % format,
                 tmpdir = tempfile.mkdtemp()
                 try:
-                    transcode_dir = transcode.transcode_release(flac_dir, output_dir, format, max_threads=args.threads)
+                    artists = "";
+                    for artist in group['group']['musicInfo']['artists']:
+                        artists += artist['name'] + ", "        
+                    basename = artists[:-2] + " - " + group['group']['name'].replace(':', ',') + " [" + str(group['group']['year']) + "] (" + torrent['media'] + " - "
+
+                    transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads)
                     new_torrent = transcode.make_torrent(transcode_dir, tmpdir, api.tracker, api.passkey, config.get('redacted', 'piece_length'))
+
                     if upload_torrent:
                         permalink = api.permalink(torrent)
                         description = create_description(torrent, flac_dir, format, permalink)
