@@ -229,27 +229,19 @@ def transcode(flac_file, output_dir, output_format):
 
     return transcode_file
 
-def get_transcode_dir(flac_dir, output_dir, output_format, resample):
-    transcode_dir = os.path.basename(flac_dir)
+def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
+    if output_format == "FLAC":
+        basename += "FLAC - Lossless"
+    elif output_format == "V0":
+        basename += "MP3 - V0"
+    elif output_format == "320":
+        basename += "MP3 - 320"
 
-    if 'FLAC' in flac_dir.upper():
-        transcode_dir = re.sub(re.compile('FLAC', re.I), output_format, transcode_dir)
-    else:
-        transcode_dir = transcode_dir + " (" + output_format + ")"
-        if output_format != 'FLAC':
-            transcode_dir = re.sub(re.compile('FLAC', re.I), '', transcode_dir)
-    if resample:
-        if '24' in flac_dir and '96' in flac_dir:
-            # XXX: theoretically, this could replace part of the album title too.
-            # e.g. "24 days in 96 castles - [24-96]" would become "16 days in 44 castles - [16-44]"
-            transcode_dir = transcode_dir.replace('24', '16')
-            transcode_dir = transcode_dir.replace('96', '48')
-        else:
-            transcode_dir += " [16-44]"
+    basename += ")"
 
-    return os.path.join(output_dir, transcode_dir)
+    return os.path.join(output_dir, basename.encode('utf8'))
 
-def transcode_release(flac_dir, output_dir, output_format, max_threads=None):
+def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None):
     '''
     Transcode a FLAC release into another format.
     '''
@@ -274,7 +266,8 @@ def transcode_release(flac_dir, output_dir, output_format, max_threads=None):
     # transcode_dir is a new directory created exclusively for this
     # transcode. Do not change this assumption without considering the
     # consequences!
-    transcode_dir = get_transcode_dir(flac_dir, output_dir, output_format, resample)
+    transcode_dir = get_transcode_dir(flac_dir, output_dir, basename, output_format, resample)
+    
     if not os.path.exists(transcode_dir):
         os.makedirs(transcode_dir)
     else:
