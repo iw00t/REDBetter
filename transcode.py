@@ -9,6 +9,8 @@ import shutil
 import signal
 import subprocess
 import sys
+from HTMLParser import HTMLParser
+import unidecode
 
 import mutagen.flac
 
@@ -238,8 +240,8 @@ def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
         basename += "MP3 - 320"
 
     basename += ")"
-
-    return os.path.join(output_dir, basename.encode('utf8'))
+    h = HTMLParser()
+    return os.path.join(output_dir, unidecode.unidecode(h.unescape(basename)))
 
 def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None):
     '''
