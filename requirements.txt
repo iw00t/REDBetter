@@ -1,3 +1,4 @@
 mechanize==0.2.5
 mutagen>=1.20
 requests>=1.0
+Unidecode>=1.0.23
