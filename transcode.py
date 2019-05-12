@@ -231,6 +231,15 @@ def transcode(flac_file, output_dir, output_format):
 
     return transcode_file
 
+def path_length_exceeds_limit(flac_dir, basename):
+    path_length = 0;
+    flac_files = locate(flac_dir, ext_matcher('.flac'))
+    for filename in flac_files:
+        if len(basename + filename[filename.rfind('/'):-1]) > 180:
+            return True
+
+    return False
+
 def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
     if output_format == "FLAC":
         basename += "FLAC - Lossless"
@@ -240,7 +249,13 @@ def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
         basename += "MP3 - 320"
 
     basename += ")"
+    
     h = HTMLParser()
+    while path_length_exceeds_limit(flac_dir, basename):
+        basename = raw_input("The file paths in this torrent exceed the 180 character limit. \n\
+            The current directory name is: " + unidecode.unidecode(h.unescape(basename)) + " \n\
+            Please enter a shorter directory name: ").decode('utf-8')
+
     return os.path.join(output_dir, unidecode.unidecode(h.unescape(basename)))
 
 def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None):
