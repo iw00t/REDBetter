@@ -240,6 +240,10 @@ def path_length_exceeds_limit(flac_dir, basename):
 
     return False
 
+def get_suitable_basename(basename):
+	h = HTMLParser()
+	return unidecode.unidecode(h.unescape(basename).replace('\\', ',').replace('/', ',').replace(':', ',').replace('*', '').replace('?', '').replace('"', '').replace('<', '').replace('>', '').replace('|', ''))
+
 def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
     if output_format == "FLAC":
         basename += "FLAC - Lossless"
@@ -250,14 +254,11 @@ def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
 
     basename += ")"
     
-    h = HTMLParser()
-    basename = unidecode.unidecode(h.unescape(basename))
-
     while path_length_exceeds_limit(flac_dir, basename):
-        basename = unidecode.unidecode(h.unescape(raw_input("The file paths in this torrent exceed the 180 character limit. \n\
-            The current directory name is: " + basename + " \n\
-            Please enter a shorter directory name: ").decode('utf-8')))
-
+        basename = get_suitable_basename(raw_input("The file paths in this torrent exceed the 180 character limit. \n\
+            The current directory name is: " + get_suitable_basename(basename.decode('utf-8')) + " \n\
+            Please enter a shorter directory name: ").decode('utf-8'))
+        
     return os.path.join(output_dir, basename)
 
 def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None):
