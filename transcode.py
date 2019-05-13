@@ -251,14 +251,15 @@ def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
         basename += "MP3 - V0"
     elif output_format == "320":
         basename += "MP3 - 320"
-
     basename += ")"
+
+    basename = get_suitable_basename(basename)
     
     while path_length_exceeds_limit(flac_dir, basename):
         basename = get_suitable_basename(raw_input("The file paths in this torrent exceed the 180 character limit. \n\
             The current directory name is: " + get_suitable_basename(basename.decode('utf-8')) + " \n\
             Please enter a shorter directory name: ").decode('utf-8'))
-        
+
     return os.path.join(output_dir, basename)
 
 def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None):
