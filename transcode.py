@@ -251,12 +251,14 @@ def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
     basename += ")"
     
     h = HTMLParser()
-    while path_length_exceeds_limit(flac_dir, basename):
-        basename = raw_input("The file paths in this torrent exceed the 180 character limit. \n\
-            The current directory name is: " + unidecode.unidecode(h.unescape(basename)) + " \n\
-            Please enter a shorter directory name: ").decode('utf-8')
+    basename = unidecode.unidecode(h.unescape(basename))
 
-    return os.path.join(output_dir, unidecode.unidecode(h.unescape(basename)))
+    while path_length_exceeds_limit(flac_dir, basename):
+        basename = unidecode.unidecode(h.unescape(raw_input("The file paths in this torrent exceed the 180 character limit. \n\
+            The current directory name is: " + basename + " \n\
+            Please enter a shorter directory name: ")))
+
+    return os.path.join(output_dir, basename)
 
 def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None):
     '''
