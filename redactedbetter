@@ -202,6 +202,18 @@ def main():
             if broken_tags:
                 continue
 
+        while os.path.exists(flac_dir) == False:
+            print "Path not found: %s" % flac_dir
+            alternative_file_path_exists = ""
+            while (alternative_file_path_exists.lower() != "y") and (alternative_file_path_exists.lower() != "n"):
+                alternative_file_path_exists = raw_input("Do you wish to provide an alternative file path? (y/n): ")
+
+            if alternative_file_path_exists.lower() == "y":
+                flac_dir = raw_input("Alternative file path: ")
+            else:
+                print "Skipping: %s" % flac_dir
+                break
+
         for format in needed:
             if os.path.exists(flac_dir):
                 print 'Adding format %s...' % format,
@@ -226,9 +238,6 @@ def main():
                     print "Error adding format %s: %s" % (format, e)
                 finally:
                     shutil.rmtree(tmpdir)
-            else:
-                print "Path not found - skipping: %s" % flac_dir
-                break
 
         seen.add(str(torrentid))
         pickle.dump(seen, open(args.cache, 'wb'))
