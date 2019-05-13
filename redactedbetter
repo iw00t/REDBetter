@@ -210,7 +210,7 @@ def main():
                     artists = "";
                     for artist in group['group']['musicInfo']['artists']:
                         artists += artist['name'] + ", "    
-                    basename = artists[:-2] + " - " + group['group']['name'].replace(':', ',').replace('/', ',') + " [" + str(torrent['remasterYear']) + "] (" + torrent['media'] + " - "
+                    basename = artists[:-2] + " - " + group['group']['name'].replace(':', ',').replace('/', ',').replace('?', '') + " [" + str(torrent['remasterYear']) + "] (" + torrent['media'] + " - "
 
                     transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads)
                     new_torrent = transcode.make_torrent(transcode_dir, tmpdir, api.tracker, api.passkey, config.get('redacted', 'piece_length'))
