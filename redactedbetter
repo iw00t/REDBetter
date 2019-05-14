@@ -230,12 +230,17 @@ def main():
                     basename = artists[:-2] + " - " + group['group']['name'] + " [" + year + "] (" + torrent['media'] + " - "
 
                     transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads)
+                    if transcode_dir == False:
+                        print "Skipping - the file in this were incorrectly marked as 24bit."
+                        break
+
                     new_torrent = transcode.make_torrent(transcode_dir, tmpdir, api.tracker, api.passkey, config.get('redacted', 'piece_length'))
 
                     if upload_torrent:
                         permalink = api.permalink(torrent)
                         description = create_description(torrent, flac_dir, format, permalink)
                         api.upload(group, torrent, new_torrent, format, description)
+                        
                     shutil.copy(new_torrent, torrent_dir)
                     print "done!"
                     if args.single: break

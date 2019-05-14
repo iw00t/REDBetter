@@ -275,11 +275,7 @@ def transcode_release(flac_dir, output_dir, basename, output_format, max_threads
 
     # check if we need to encode
     if output_format == 'FLAC' and not resample:
-        # XXX: if output_dir is not the same as flac_dir, this may not
-        # do what the user expects.
-        if output_dir != os.path.dirname(flac_dir):
-            print "Warning: no encode necessary, so files won't be placed in", output_dir
-        return flac_dir
+        return False
 
     # make a new directory for the transcoded files
     #
