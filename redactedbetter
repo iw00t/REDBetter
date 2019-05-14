@@ -50,6 +50,16 @@ def formats_needed(group, torrent, supported_formats):
     allowed_formats = redactedapi.allowed_transcodes(torrent)
     return [format for format in missing_formats if format in allowed_formats]
 
+def border_msg(msg):
+    width = 0
+    for line in msg.splitlines():
+        length = len(line)
+        if length > width:
+            width = length
+
+    dash = "-" * (width - 1)
+    return "+{dash}+\n{msg}\n+{dash}+".format(dash=dash,msg=msg)
+
 def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter, prog='redactedbetter')
     parser.add_argument('release_urls', nargs='*', help='the URL where the release is located')
@@ -139,9 +149,8 @@ def main():
         release = "Release found: %s (%s)" % (redactedapi.unescape(group['group']['name']), group['group']['year'])
         releaseurl = "Release URL: %s" % api.release_url(group, torrent)
 
-        print
-        print release.encode("utf-8")
-        print releaseurl.encode("utf-8")
+        print("\n\n")
+        print(border_msg(release.encode("utf-8") + "\n" + releaseurl.encode("utf-8")))
 
         if not torrent['filePath']:
             flac_file = os.path.join(data_dir, redactedapi.unescape(torrent['fileList']).split('{{{')[0])
@@ -240,7 +249,7 @@ def main():
                         permalink = api.permalink(torrent)
                         description = create_description(torrent, flac_dir, format, permalink)
                         api.upload(group, torrent, new_torrent, format, description)
-                        
+
                     shutil.copy(new_torrent, torrent_dir)
                     print "done!"
                     if args.single: break
