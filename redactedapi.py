@@ -109,7 +109,8 @@ class RedactedAPI:
         try:
             parsed = json.loads(r.content)
             if parsed['status'] != 'success':
-                raise RequestException
+                #raise RequestException
+                return None
             return parsed['response']
         except ValueError:
             raise RequestException

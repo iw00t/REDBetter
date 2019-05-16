@@ -144,122 +144,123 @@ def main():
 
     for groupid, torrentid in candidates:
         group = api.request('torrentgroup', id=groupid)
-        torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
+        if group != None:
+            torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
 
-        release = "Release found: %s (%s)" % (redactedapi.unescape(group['group']['name']), group['group']['year'])
-        releaseurl = "Release URL: %s" % api.release_url(group, torrent)
+            release = "Release found: %s (%s)" % (redactedapi.unescape(group['group']['name']), group['group']['year'])
+            releaseurl = "Release URL: %s" % api.release_url(group, torrent)
 
-        print("\n\n")
-        print(border_msg(release.encode("utf-8") + "\n" + releaseurl.encode("utf-8")))
+            print("\n\n")
+            print(border_msg(release.encode("utf-8") + "\n" + releaseurl.encode("utf-8")))
 
-        if not torrent['filePath']:
-            flac_file = os.path.join(data_dir, redactedapi.unescape(torrent['fileList']).split('{{{')[0])
-            if not os.path.exists(flac_file):
-                print "Path not found - skipping: %s" % flac_file
-                continue
-            flac_dir = os.path.join(data_dir, "%s (%s) [FLAC]" % (
-            redactedapi.unescape(group['group']['name']), group['group']['year']))
-            if not os.path.exists(flac_dir):
-                os.makedirs(flac_dir)
-            shutil.copy(flac_file, flac_dir)
-        else:
-            flac_dir = os.path.join(data_dir, redactedapi.unescape(torrent['filePath']))
-
-        flac_dir = flac_dir.encode(sys.getfilesystemencoding())
-        if int(do_24_bit):
-            try:
-                if transcode.is_24bit(flac_dir) and torrent['encoding'] != '24bit Lossless':
-                    # A lot of people are uploading FLACs from Bandcamp without realizing
-                    # that they're actually 24 bit files (usually 24/44.1). Since we know for
-                    # sure whether the files are 24 bit, we might as well correct the listing
-                    # on the site (and get an extra upload in the process).
-                    if args.no_24bit_edit:
-                        print "Release is actually 24-bit lossless, skipping."
-                        continue
-                    if int(do_24_bit) == 1:
-                        confirmation = raw_input("Mark release as 24bit lossless? y/n: ")
-                        if confirmation != 'y':
-                            continue
-                    print "Marking release as 24bit lossless."
-                  #  api.set_24bit(torrent)
-                    group = api.request('torrentgroup', id=groupid)
-                    torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
-            except Exception as e:
-                print "Error: can't edit 24-bit torrent - skipping: %s" % e
-                continue
-
-        if transcode.is_multichannel(flac_dir):
-            print "This is a multichannel release, which is unsupported - skipping"
-            continue
-
-        needed = formats_needed(group, torrent, supported_formats)
-        print "Formats needed: %s" % ', '.join(needed)
-
-        if needed:
-            # Before proceeding, do the basic tag checks on the source
-            # files to ensure any uploads won't be reported, but punt
-            # on the tracknumber formatting; problems with tracknumber
-            # may be fixable when the tags are copied.
-            broken_tags = False
-            for flac_file in transcode.locate(flac_dir, transcode.ext_matcher('.flac')):
-                (ok, msg) = tagging.check_tags(flac_file, check_tracknumber_format=False)
-                if not ok:
-                    print "A FLAC file in this release has unacceptable tags - skipping: %s" % msg
-                    print "You might be able to trump it."
-                    broken_tags = True
-                    break
-            if broken_tags:
-                continue
-
-        while os.path.exists(flac_dir) == False:
-            print "Path not found: %s" % flac_dir
-            alternative_file_path_exists = ""
-            while (alternative_file_path_exists.lower() != "y") and (alternative_file_path_exists.lower() != "n"):
-                alternative_file_path_exists = raw_input("Do you wish to provide an alternative file path? (y/n): ")
-
-            if alternative_file_path_exists.lower() == "y":
-                flac_dir = raw_input("Alternative file path: ")
+            if not torrent['filePath']:
+                flac_file = os.path.join(data_dir, redactedapi.unescape(torrent['fileList']).split('{{{')[0])
+                if not os.path.exists(flac_file):
+                    print "Path not found - skipping: %s" % flac_file
+                    continue
+                flac_dir = os.path.join(data_dir, "%s (%s) [FLAC]" % (
+                redactedapi.unescape(group['group']['name']), group['group']['year']))
+                if not os.path.exists(flac_dir):
+                    os.makedirs(flac_dir)
+                shutil.copy(flac_file, flac_dir)
             else:
-                print "Skipping: %s" % flac_dir
-                break
+                flac_dir = os.path.join(data_dir, redactedapi.unescape(torrent['filePath']))
 
-        for format in needed:
-            if os.path.exists(flac_dir):
-                print 'Adding format %s...' % format,
-                tmpdir = tempfile.mkdtemp()
+            flac_dir = flac_dir.encode(sys.getfilesystemencoding())
+            if int(do_24_bit):
                 try:
-                    artists = "";
-                    for artist in group['group']['musicInfo']['artists']:
-                        artists += artist['name'] + ", "
-
-                    year = str(torrent['remasterYear'])
-                    if year == "0":
-                        year = str(group['group']['year'])
-
-                    basename = artists[:-2] + " - " + group['group']['name'] + " [" + year + "] (" + torrent['media'] + " - "
-
-                    transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads)
-                    if transcode_dir == False:
-                        print "Skipping - the file in this were incorrectly marked as 24bit."
-                        break
-
-                    new_torrent = transcode.make_torrent(transcode_dir, tmpdir, api.tracker, api.passkey, config.get('redacted', 'piece_length'))
-
-                    if upload_torrent:
-                        permalink = api.permalink(torrent)
-                        description = create_description(torrent, flac_dir, format, permalink)
-                        api.upload(group, torrent, new_torrent, format, description)
-
-                    shutil.copy(new_torrent, torrent_dir)
-                    print "done!"
-                    if args.single: break
+                    if transcode.is_24bit(flac_dir) and torrent['encoding'] != '24bit Lossless':
+                        # A lot of people are uploading FLACs from Bandcamp without realizing
+                        # that they're actually 24 bit files (usually 24/44.1). Since we know for
+                        # sure whether the files are 24 bit, we might as well correct the listing
+                        # on the site (and get an extra upload in the process).
+                        if args.no_24bit_edit:
+                            print "Release is actually 24-bit lossless, skipping."
+                            continue
+                        if int(do_24_bit) == 1:
+                            confirmation = raw_input("Mark release as 24bit lossless? y/n: ")
+                            if confirmation != 'y':
+                                continue
+                        print "Marking release as 24bit lossless."
+                      #  api.set_24bit(torrent)
+                        group = api.request('torrentgroup', id=groupid)
+                        torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
                 except Exception as e:
-                    print "Error adding format %s: %s" % (format, e)
-                finally:
-                    shutil.rmtree(tmpdir)
+                    print "Error: can't edit 24-bit torrent - skipping: %s" % e
+                    continue
 
-        seen.add(str(torrentid))
-        pickle.dump(seen, open(args.cache, 'wb'))
+            if transcode.is_multichannel(flac_dir):
+                print "This is a multichannel release, which is unsupported - skipping"
+                continue
+
+            needed = formats_needed(group, torrent, supported_formats)
+            print "Formats needed: %s" % ', '.join(needed)
+
+            if needed:
+                # Before proceeding, do the basic tag checks on the source
+                # files to ensure any uploads won't be reported, but punt
+                # on the tracknumber formatting; problems with tracknumber
+                # may be fixable when the tags are copied.
+                broken_tags = False
+                for flac_file in transcode.locate(flac_dir, transcode.ext_matcher('.flac')):
+                    (ok, msg) = tagging.check_tags(flac_file, check_tracknumber_format=False)
+                    if not ok:
+                        print "A FLAC file in this release has unacceptable tags - skipping: %s" % msg
+                        print "You might be able to trump it."
+                        broken_tags = True
+                        break
+                if broken_tags:
+                    continue
+
+            while os.path.exists(flac_dir) == False:
+                print "Path not found: %s" % flac_dir
+                alternative_file_path_exists = ""
+                while (alternative_file_path_exists.lower() != "y") and (alternative_file_path_exists.lower() != "n"):
+                    alternative_file_path_exists = raw_input("Do you wish to provide an alternative file path? (y/n): ")
+
+                if alternative_file_path_exists.lower() == "y":
+                    flac_dir = raw_input("Alternative file path: ")
+                else:
+                    print "Skipping: %s" % flac_dir
+                    break
+
+            for format in needed:
+                if os.path.exists(flac_dir):
+                    print 'Adding format %s...' % format,
+                    tmpdir = tempfile.mkdtemp()
+                    try:
+                        artists = "";
+                        for artist in group['group']['musicInfo']['artists']:
+                            artists += artist['name'] + ", "
+
+                        year = str(torrent['remasterYear'])
+                        if year == "0":
+                            year = str(group['group']['year'])
+
+                        basename = artists[:-2] + " - " + group['group']['name'] + " [" + year + "] (" + torrent['media'] + " - "
+
+                        transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads)
+                        if transcode_dir == False:
+                            print "Skipping - the file in this were incorrectly marked as 24bit."
+                            break
+
+                        new_torrent = transcode.make_torrent(transcode_dir, tmpdir, api.tracker, api.passkey, config.get('redacted', 'piece_length'))
+
+                        if upload_torrent:
+                            permalink = api.permalink(torrent)
+                            description = create_description(torrent, flac_dir, format, permalink)
+                            api.upload(group, torrent, new_torrent, format, description)
+
+                        shutil.copy(new_torrent, torrent_dir)
+                        print "done!"
+                        if args.single: break
+                    except Exception as e:
+                        print "Error adding format %s: %s" % (format, e)
+                    finally:
+                        shutil.rmtree(tmpdir)
+
+            seen.add(str(torrentid))
+            pickle.dump(seen, open(args.cache, 'wb'))
 
 if __name__ == "__main__":
     main()
