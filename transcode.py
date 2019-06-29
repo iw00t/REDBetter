@@ -234,9 +234,14 @@ def transcode(flac_file, output_dir, output_format):
 def path_length_exceeds_limit(flac_dir, basename):
     path_length = 0;
     flac_files = locate(flac_dir, ext_matcher('.flac'))
-    for filename in flac_files:
-        if len(basename + filename[filename.rfind('/'):-1]) > 180:
-            return True
+
+    source_directory_name = flac_dir[flac_dir.rfind('/') + 1:-1]
+
+    for root, dirs, files in os.walk(flac_dir):
+        for name in files:
+            if name.endswith('.flac'):
+                if len(basename + root[root.rfind(source_directory_name) + len(source_directory_name) + 1:-1] + "/" + name) > 180:
+                    return True
 
     return False
 
