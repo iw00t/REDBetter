@@ -239,8 +239,7 @@ def path_length_exceeds_limit(flac_dir, basename):
 
     for root, dirs, files in os.walk(flac_dir):
         for name in files:
-            if name.endswith('.flac'):
-                if len(basename + root[root.rfind(source_directory_name) + len(source_directory_name) + 1:-1] + "/" + name) > 180:
+            if len(basename + root[root.rfind(source_directory_name) + len(source_directory_name) + 1:-1] + "/" + name) > 180:
                     return True
 
     return False
