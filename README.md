@@ -1,21 +1,30 @@
+![REDBetter Logo](logo.jpg)
+
 ## Introduction
 
->* **Do not abuse automated site access.**
->>All automated site access must be done through the API. API use is limited to 5 requests within any 10-second window. Scripts and other automated processes must not scrape the site's HTML pages."
-
-Proceed at your own risk.
+This repository contains my personal fork of the REDBetter script, originally developed for What.CD by zacharydenton and updated by Mechazawa.
 
 ---
 `redactedbetter` is a script which searches your torrent download directory for any FLAC torrents which do not have transcodes, then automatically transcodes and uploads the torrents to redacted.ch.
 
-## Installation
-### Dependencies
+## Dependencies
+
 * Python 2.7 or newer
-* `mechanize`, `mutagen`, and `requests` Python modules. You can install these with `pip install -r requirements.txt`. Depending on your user priveleges, you may need to use `sudo`, so try: `sudo -H pip install -r requirements.txt`
-* `lame`, `sox`, and `flac`. These should all be available on your package manager of choice:
-  * Ubuntu: `sudo apt install lame sox flac`
-  * macOS: `brew install lame sox flac`
-* [`mktorrent`](https://github.com/Rudde/mktorrent): Just installing it with a package manager won't do in this case. We need to build it from source, because otherwise an option that we need is not enabled. For Linux systems, run the following commands in a temporary directory:
+* `mktorrent`
+* `mechanize`, `mutagen` and `requests` Python modules
+* `lame`, `sox` and `flac`
+
+
+## Installation Instructions
+
+#### 1. Install Python
+
+Python is available [here](https://www.python.org/downloads/).
+
+
+#### 2. Install `mktorrent`
+
+`mktorrent` must be built from source, rather than installed using a package manager. For Linux systems, run the following commands in a temporary directory:
 
 ~~~~
 $> git clone git@github.com:Rudde/mktorrent.git
@@ -25,7 +34,25 @@ $> make && sudo make install
 
 If you are on a seedbox and you lack the privileges to install packages, you are best off contacting your seedbox provider and asking them to install the listed packages.
 
-### Configuration
+#### 3. Install `mechanize`, `mutagen` and `requests` Python modules
+
+Depending on your user privileges you may need to use sudo, as shown below
+
+~~~~
+sudo -H pip install -r requirements.txt
+~~~~
+
+
+#### 4. Install `lame`, `sox` and `flac`
+
+These should all be available on your package manager of choice:
+  * Debian: `sudo apt-get install lame sox flac`
+  * Ubuntu: `sudo apt install lame sox flac`
+  * macOS: `brew install lame sox flac`
+
+
+
+## Configuration
 Run `redactedbetter` by running the script included when you cloned the repository:
 
     $> ./redactedbetter
