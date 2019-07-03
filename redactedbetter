@@ -15,9 +15,6 @@ import redactedapi
 from _version import __version__
 
 
-def banner():
-    return ''
-
 def create_description(torrent, flac_dir, format, permalink):
     # Create an example command to document the transcode process.
     cmds = transcode.transcode_commands(format,
@@ -32,7 +29,8 @@ def create_description(torrent, flac_dir, format, permalink):
         '',
         '[code]%s[/code]' % ' | '.join(cmds),
         '',
-        banner()
+        'Transcoded and uploaded using [url=https://redacted.ch/forums.php?action=viewthread&threadid=35524]REDBetter (iw00t fork)[/url].'
+        ''
         ]
     return description
 
