@@ -11,7 +11,7 @@ REDBetter is a script which searches your torrent download directory for any FLA
 
 * Python 2.7 or newer
 * `mktorrent`
-* `mechanize`, `mutagen` and `requests` Python modules
+* `mechanize`, `mutagen`, `requests` and `Unidecode` Python modules
 * `lame`, `sox` and `flac`
 
 
@@ -34,7 +34,7 @@ $> make && sudo make install
 
 If you are on a seedbox and you lack the privileges to install packages, you are best off contacting your seedbox provider and asking them to install the listed packages.
 
-#### 3. Install `mechanize`, `mutagen` and `requests` Python modules
+#### 3. Install `mechanize`, `mutagen`, `requests` and `Unidecode` Python modules
 
 Depending on your user privileges you may need to use sudo, as shown below
 
