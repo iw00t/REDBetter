@@ -29,7 +29,7 @@ def create_description(torrent, flac_dir, format, permalink):
         '',
         '[code]%s[/code]' % ' | '.join(cmds),
         '',
-        'Transcoded and uploaded using [url=https://redacted.ch/forums.php?action=viewthread&threadid=35524]REDBetter (iw00t fork)[/url].'
+        'Created using [url=https://redacted.ch/forums.php?action=viewthread&threadid=35524]REDBetter (iw00t fork)[/url]'
         ''
         ]
     return description
