@@ -244,7 +244,7 @@ def main():
 
                         transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads)
                         if transcode_dir == False:
-                            print "Skipping - the file in this were incorrectly marked as 24bit."
+                            print "Skipping - some file(s) in this release were incorrectly marked as 24bit."
                             break
 
                         new_torrent = transcode.make_torrent(transcode_dir, tmpdir, api.tracker, api.passkey, config.get('redacted', 'piece_length'))
