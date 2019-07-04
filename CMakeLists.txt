@@ -3,4 +3,4 @@ project(REDBetter)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(REDBetter main.cpp)
+add_executable(REDBetter src/main.cpp)
