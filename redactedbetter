@@ -74,7 +74,7 @@ def main():
 
     args = parser.parse_args()
 
-    config = ConfigParser.SafeConfigParser()
+    config = ConfigParser.RawConfigParser()
     try:
         open(args.config)
         config.read(args.config)
@@ -84,6 +84,7 @@ def main():
         config.add_section('redacted')
         config.set('redacted', 'username', '')
         config.set('redacted', 'password', '')
+        config.set('redacted', 'session_cookie', '')
         config.set('redacted', 'data_dir', '')
         config.set('redacted', 'output_dir', '')
         config.set('redacted', 'torrent_dir', '')
@@ -97,6 +98,10 @@ def main():
     finally:
         username = config.get('redacted', 'username')
         password = config.get('redacted', 'password')
+        try:
+            session_cookie = os.path.expanduser(config.get('redacted', 'session_cookie'))
+        except ConfigParser.NoOptionError:
+            session_cookie = None
         do_24_bit = config.get('redacted', '24bit_behaviour')
         data_dir = os.path.expanduser(config.get('redacted', 'data_dir'))
         try:
@@ -124,7 +129,7 @@ def main():
     upload_torrent = not args.no_upload
 
     print 'Logging in to RED...'
-    api = redactedapi.RedactedAPI(username, password)
+    api = redactedapi.RedactedAPI(username, password, session_cookie)
 
     try:
         seen = pickle.load(open(args.cache))
