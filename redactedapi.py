@@ -65,11 +65,12 @@ class RequestException(Exception):
     pass
 
 class RedactedAPI:
-    def __init__(self, username=None, password=None):
+    def __init__(self, username=None, password=None, session_cookie=None):
         self.session = requests.Session()
         self.session.headers.update(headers)
         self.username = username
         self.password = password
+        self.session_cookie = session_cookie
         self.authkey = None
         self.passkey = None
         self.userid = None
@@ -79,7 +80,36 @@ class RedactedAPI:
         self._login()
 
     def _login(self):
+        if self.session_cookie is not None:
+            try:
+                self._login_cookie()
+            except:
+                print "WARNING: session cookie attempted and failed"
+                self._login_username_password()
+        else:
+            self._login_username_password()
+
+    def _login_cookie(self):
+        mainpage = 'https://redacted.ch/';
+        cookiedict = {"session": self.session_cookie}
+        cookies = requests.utils.cookiejar_from_dict(cookiedict)
+
+        self.session.cookies.update(cookies)
+        r = self.session.get(mainpage)
+        try:
+            accountinfo = self.request('index')
+            self.authkey = accountinfo['authkey']
+            self.passkey = accountinfo['passkey']
+            self.userid = accountinfo['id']
+        except:
+            raise LoginException
+
+    def _login_username_password(self):
         '''Logs in user and gets authkey from server'''
+
+        if not self.username or self.username == "":
+            print "WARNING: username authentication attempted, but username not set, skipping."
+            raise LoginException
         loginpage = 'https://redacted.ch/login.php'
         data = {'username': self.username,
                 'password': self.password}
@@ -90,6 +120,13 @@ class RedactedAPI:
         self.authkey = accountinfo['authkey']
         self.passkey = accountinfo['passkey']
         self.userid = accountinfo['id']
+        try:
+            accountinfo = self.request('index')
+            self.authkey = accountinfo['authkey']
+            self.passkey = accountinfo['passkey']
+            self.userid = accountinfo['id']
+        except:
+            raise LoginException
 
     def logout(self):
         self.session.get("https://redacted.ch/logout.php?auth=%s" % self.authkey)
