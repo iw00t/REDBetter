@@ -46,7 +46,7 @@ class TaggingException(Exception):
 
 def valid_fractional_tag(value):
     # m or m/n
-    if re.match(r"""\d+(/(\d+))?$""", value):
+    if re.match(r"""[A-Z]?\d+(/(\d+))?$""", value):
         return True
     else:
         return False
