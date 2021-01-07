@@ -132,8 +132,11 @@ Beware though, this will cause the script to re-check every download as it does 
     # are valid inside the container, you shouldn't have to change them if you
     # properly configured the volumes previously. (docker-compose.override.yml)
 
-  $> docker-compose build
+  # Without arguments
   $> docker-compose run --rm redbetter
+  
+  # With arguments
+  $> docker-compose run --rm redbetter -U http://redacted.ch/torrents.php?id=1000\&torrentid=1000000
 ~~~
 
 ## Bugs and feature requests

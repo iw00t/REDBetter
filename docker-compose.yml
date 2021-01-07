@@ -1,12 +1,5 @@
 version: '3'
 services:
   redbetter:
-    build:
-      context: .
-    command:
-      - /app/redactedbetter
-      - --config
-      - /config/config
-      - --cache
-      - /config/cache
-    image: mattrob1nson/redbetter:latest
+    image: iw00t/redbetter:latest
+    entrypoint: ["/app/redactedbetter", "--config", "/config/config", "--cache", "/config/cache"]
