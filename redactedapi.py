@@ -220,7 +220,10 @@ class RedactedAPI:
         form.find_control('file_input').add_file(open(new_torrent), 'application/x-bittorrent', os.path.basename(new_torrent))
         #if torrent['remastered']:
         #    form.find_control('remaster').set_single('1')
-        form['remaster_year'] = str(torrent['remasterYear'])
+        if torrent['remasterYear'] != 0:
+            form['remaster_year'] = str(torrent['remasterYear'])
+        else:
+            form['remaster_year'] = str(group['group']['year'])
         form['remaster_title'] = torrent['remasterTitle']
         form['remaster_record_label'] = torrent['remasterRecordLabel']
         form['remaster_catalogue_number'] = torrent['remasterCatalogueNumber']
