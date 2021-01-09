@@ -4,3 +4,4 @@ docker-compose.yml
 docker-compose.*.yml
 logo*
 README.md
+venv
