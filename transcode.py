@@ -231,8 +231,9 @@ def transcode(flac_file, output_dir, output_format):
 
     return transcode_file
 
+
 def path_length_exceeds_limit(flac_dir, basename):
-    path_length = 0;
+    path_length = 0
     flac_files = locate(flac_dir, ext_matcher('.flac'))
 
     source_directory_name = flac_dir[flac_dir.rfind('/') + 1:-1]
@@ -240,36 +241,53 @@ def path_length_exceeds_limit(flac_dir, basename):
     for root, dirs, files in os.walk(flac_dir):
         for name in files:
             if len(basename + root[root.rfind(source_directory_name) + len(source_directory_name) + 1:-1] + "/" + name) > 180:
-                    return True
+                return True
 
     return False
 
+
 def get_suitable_basename(basename):
-	h = HTMLParser()
-	return unidecode.unidecode(h.unescape(basename).replace('\\', ',').replace('/', ',').replace(':', ',').replace('*', '').replace('?', '').replace('"', '').replace('<', '').replace('>', '').replace('|', ''))
+    h = HTMLParser()
+    return unidecode.unidecode(h.unescape(basename).replace('\\', ',').replace('/', ',').replace(':', ',').replace('*', '').replace('?', '').replace('"', '').replace('<', '').replace('>', '').replace('|', ''))
 
-def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample):
+
+def get_basename_suffix(basename, output_format):
+    newbasename = basename
     if output_format == "FLAC":
-        basename += "FLAC - Lossless"
+        newbasename += "FLAC - Lossless"
     elif output_format == "V0":
-        basename += "MP3 - V0"
+        newbasename += "MP3 - V0"
     elif output_format == "320":
-        basename += "MP3 - 320"
-    basename += ")"
+        newbasename += "MP3 - 320"
+    newbasename += ")"
+    return newbasename
 
-    basename = get_suitable_basename(basename)
-    
-    while path_length_exceeds_limit(flac_dir, basename):
-        basename = get_suitable_basename(raw_input("The file paths in this torrent exceed the 180 character limit. \n\
-            The current directory name is: " + get_suitable_basename(basename.decode('utf-8')) + " \n\
-            Please enter a shorter directory name: ").decode('utf-8'))
 
-    return os.path.join(output_dir, basename)
+def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample, no_prompt):
+    newbasename = get_basename_suffix(basename)
+    newbasename = get_suitable_basename(newbasename)
 
-def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None):
-    '''
-    Transcode a FLAC release into another format.
-    '''
+    if no_prompt:
+        if path_length_exceeds_limit(flac_dir, newbasename):
+            print "The file paths in this torrent exceed the 180 character limit. \n\
+                The current directory name is: " + get_suitable_basename(newbasename.decode('utf-8')) + "\n"
+            shortened_basename = basename
+            while path_length_exceeds_limit(flac_dir, newbasename):
+                shortened_basename = shortened_basename[:-1]
+                newbasename = get_suitable_basename(get_basename_suffix(shortened_basename))
+            print "Shortened directory name: " + newbasename
+
+    else:
+        while path_length_exceeds_limit(flac_dir, newbasename):
+            newbasename = get_suitable_basename(raw_input("The file paths in this torrent exceed the 180 character limit. \n\
+                The current directory name is: " + get_suitable_basename(newbasename.decode('utf-8')) + " \n\
+                Please enter a shorter directory name: ").decode('utf-8'))
+
+    return os.path.join(output_dir, newbasename)
+
+
+def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None, no_prompt=False):
+    # Transcode a FLAC release into another format.
     flac_dir = os.path.abspath(flac_dir)
     output_dir = os.path.abspath(output_dir)
     flac_files = locate(flac_dir, ext_matcher('.flac'))
@@ -287,7 +305,7 @@ def transcode_release(flac_dir, output_dir, basename, output_format, max_threads
     # transcode_dir is a new directory created exclusively for this
     # transcode. Do not change this assumption without considering the
     # consequences!
-    transcode_dir = get_transcode_dir(flac_dir, output_dir, basename, output_format, resample)
+    transcode_dir = get_transcode_dir(flac_dir, output_dir, basename, output_format, resample, no_prompt)
     
     if not os.path.exists(transcode_dir):
         os.makedirs(transcode_dir)
@@ -363,6 +381,7 @@ def make_torrent(input_dir, output_dir, tracker, passkey, piece_length):
     subprocess.check_output(command, stderr=subprocess.STDOUT)
     return torrent
 
+
 def main():
     import argparse
     parser = argparse.ArgumentParser()
@@ -373,5 +392,6 @@ def main():
     args = parser.parse_args()
 
     transcode_release(os.path.expanduser(args.input_dir), os.path.expanduser(args.output_dir), args.output_format, args.threads)
+
 
 if __name__ == "__main__": main()
