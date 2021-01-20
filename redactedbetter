@@ -69,6 +69,7 @@ def main():
     parser.add_argument('--cache', help='the location of the cache', \
             default=os.path.expanduser('~/.redactedbetter/cache'))
     parser.add_argument('-U', '--no-upload', action='store_true', help='don\'t upload new torrents (in case you want to do it manually)')
+    parser.add_argument('-Y', '--force-year', action='store_true', help='process releases without year (unknown or unconfirmed)')
     parser.add_argument('-E', '--no-24bit-edit', action='store_true', help='don\'t try to edit 24-bit torrents mistakenly labeled as 16-bit')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
 
@@ -127,6 +128,7 @@ def main():
             supported_media = redactedapi.lossless_media
 
     upload_torrent = not args.no_upload
+    force_year = args.force_year
 
     print 'Logging in to RED...'
     api = redactedapi.RedactedAPI(username, password, session_cookie)
@@ -150,7 +152,7 @@ def main():
         if group != None:
             torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
 
-            artist = "";
+            artist = ""
             if len(group['group']['musicInfo']['artists']) > 1:
                 artist = "Various Artists"
             else:
@@ -158,7 +160,11 @@ def main():
 
             year = str(torrent['remasterYear'])
             if year == "0":
-                year = str(group['group']['year'])
+                if force_year:
+                    year = str(group['group']['year'])
+                else:
+                    print "Skipping because release has no year set: " + artist + " - " + redactedapi.unescape(group['group']['name'])
+                    continue
 
             releaseartist = "Release artist(s): %s" % artist
             releasename   = "Release name     : %s" % redactedapi.unescape(group['group']['name'])
