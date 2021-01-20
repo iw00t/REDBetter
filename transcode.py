@@ -264,18 +264,18 @@ def get_basename_suffix(basename, output_format):
 
 
 def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample, no_prompt):
-    newbasename = get_basename_suffix(basename)
+    newbasename = get_basename_suffix(basename, output_format)
     newbasename = get_suitable_basename(newbasename)
 
     if no_prompt:
         if path_length_exceeds_limit(flac_dir, newbasename):
             print "The file paths in this torrent exceed the 180 character limit. \n\
-                The current directory name is: " + get_suitable_basename(newbasename.decode('utf-8')) + "\n"
+                The current directory name is: " + get_suitable_basename(newbasename.decode('utf-8'))
             shortened_basename = basename
             while path_length_exceeds_limit(flac_dir, newbasename):
                 shortened_basename = shortened_basename[:-1]
-                newbasename = get_suitable_basename(get_basename_suffix(shortened_basename))
-            print "Shortened directory name: " + newbasename
+                newbasename = get_suitable_basename(get_basename_suffix(shortened_basename, output_format))
+            print "Auto-shortened directory name: " + newbasename
 
     else:
         while path_length_exceeds_limit(flac_dir, newbasename):
