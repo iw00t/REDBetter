@@ -160,11 +160,10 @@ def main():
 
             year = str(torrent['remasterYear'])
             if year == "0":
-                if force_year:
-                    year = str(group['group']['year'])
-                else:
-                    print "Skipping because release has no year set: " + artist + " - " + redactedapi.unescape(group['group']['name'])
-                    continue
+                noyear = True
+                year = str(group['group']['year'])
+            else:
+                noyear = False
 
             releaseartist = "Release artist(s): %s" % artist
             releasename   = "Release name     : %s" % redactedapi.unescape(group['group']['name'])
@@ -173,6 +172,10 @@ def main():
 
             print("\n\n")
             print(border_msg(releaseartist.encode("utf-8") + "\n" + releasename.encode("utf-8") + "\n" + releaseyear.encode("utf-8") + "\n" + releaseurl.encode("utf-8")))
+
+            if noyear and not force_year:
+                print "Skipping because release has no year set"
+                continue
 
             if not torrent['filePath']:
                 flac_file = os.path.join(data_dir, redactedapi.unescape(torrent['fileList']).split('{{{')[0])
