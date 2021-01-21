@@ -84,6 +84,7 @@ optional arguments:
   -h, --help            show this help message and exit
   -s, --single          only add one format per release (useful for getting
                         unique groups) (default: False)
+  -P, --no-prompt       sets unattended mode (default: False)
   -j THREADS, --threads THREADS
                         number of threads to use when transcoding (default: 3)
   --config CONFIG       the location of the configuration file (default:
@@ -114,6 +115,8 @@ REDBetter caches the results of your transcodes, and will skip any transcodes it
     $> ./redactedbetter ~/.redactedbetter/cache
 
 Beware though, this will cause the script to re-check every download as it does on the first run.
+
+Unattended mode will skip directories where data is not found instead of prompting the user, will automatically shorten filenames (directory + filename) that are over 180 characters, and will skip editing existing torrents that are actually FLAC 24bit to mark it as such.
 
 ## Bugs and feature requests
 
