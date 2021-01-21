@@ -181,7 +181,7 @@ def main():
             else:
                 flac_dir = os.path.join(data_dir, redactedapi.unescape(torrent['filePath']))
 
-            flac_dir = flac_dir.encode(sys.getfilesystemencoding())
+            flac_dir = flac_dir.encode("utf-8")
             if int(do_24_bit):
                 try:
                     if transcode.is_24bit(flac_dir) and torrent['encoding'] != '24bit Lossless':
