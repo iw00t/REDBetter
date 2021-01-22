@@ -69,6 +69,7 @@ def main():
     parser.add_argument('--cache', help='the location of the cache', \
             default=os.path.expanduser('~/.redactedbetter/cache'))
     parser.add_argument('-U', '--no-upload', action='store_true', help='don\'t upload new torrents (in case you want to do it manually)')
+    parser.add_argument('-P', '--no-prompt', action='store_true', help='don\'t prompt for user input (to run unattended)')
     parser.add_argument('-E', '--no-24bit-edit', action='store_true', help='don\'t try to edit 24-bit torrents mistakenly labeled as 16-bit')
     parser.add_argument('--version', action='version', version='%(prog)s ' + __version__)
 
@@ -127,6 +128,7 @@ def main():
             supported_media = redactedapi.lossless_media
 
     upload_torrent = not args.no_upload
+    no_prompt = args.no_prompt
 
     print 'Logging in to RED...'
     api = redactedapi.RedactedAPI(username, password, session_cookie)
@@ -193,6 +195,9 @@ def main():
                             print "Release is actually 24-bit lossless, skipping."
                             continue
                         if int(do_24_bit) == 1:
+                            if no_prompt:
+                                print "No prompt: Mark release as 24bit lossless? y/n => n"
+                                continue
                             confirmation = raw_input("Mark release as 24bit lossless? y/n: ")
                             if confirmation != 'y':
                                 continue
@@ -229,7 +234,10 @@ def main():
 
             while os.path.exists(flac_dir) == False:
                 print "Path not found: %s" % flac_dir
-                alternative_file_path_exists = ""
+                if no_prompt:
+                    alternative_file_path_exists = "n"
+                else:
+                    alternative_file_path_exists = ""
                 while (alternative_file_path_exists.lower() != "y") and (alternative_file_path_exists.lower() != "n"):
                     alternative_file_path_exists = raw_input("Do you wish to provide an alternative file path? (y/n): ")
 
@@ -249,8 +257,15 @@ def main():
                         else:
                             basename = artist + " - " + group['group']['name'] + " [" + year + "] (" + torrent['media'] + " - "
 
-                        transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads)
-                        if transcode_dir == False:
+                        base_attrs = {
+                            'artist': artist,
+                            'album': group['group']['name'],
+                            'year': year,
+                            'media': torrent['media'],
+                            'remaster': torrent['remasterTitle']
+                        }
+                        transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads, no_prompt=no_prompt, base_attrs=base_attrs)
+                        if not transcode_dir:
                             print "Skipping - some file(s) in this release were incorrectly marked as 24bit."
                             break
 
