@@ -257,7 +257,14 @@ def main():
                         else:
                             basename = artist + " - " + group['group']['name'] + " [" + year + "] (" + torrent['media'] + " - "
 
-                        transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads, no_prompt=no_prompt)
+                        base_attrs = {
+                            'artist': artist,
+                            'album': group['group']['name'],
+                            'year': year,
+                            'media': torrent['media'],
+                            'remaster': torrent['remasterTitle']
+                        }
+                        transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads, no_prompt=no_prompt, base_attrs=base_attrs)
                         if not transcode_dir:
                             print "Skipping - some file(s) in this release were incorrectly marked as 24bit."
                             break

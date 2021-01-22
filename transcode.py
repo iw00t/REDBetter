@@ -251,32 +251,82 @@ def get_suitable_basename(basename):
     return unidecode.unidecode(h.unescape(basename).replace('\\', ',').replace('/', ',').replace(':', ',').replace('*', '').replace('?', '').replace('"', '').replace('<', '').replace('>', '').replace('|', ''))
 
 
-def get_basename_suffix(basename, output_format):
-    newbasename = basename
+def get_suffix(output_format):
+    suffix = "["
     if output_format == "FLAC":
-        newbasename += "FLAC - Lossless"
+        suffix += "FLAC"
     elif output_format == "V0":
-        newbasename += "MP3 - V0"
+        suffix += "V0"
     elif output_format == "320":
-        newbasename += "MP3 - 320"
-    newbasename += ")"
-    return newbasename
+        suffix += "320"
+    suffix += "]"
+    return suffix
 
 
-def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample, no_prompt):
-    newbasename = get_basename_suffix(basename, output_format)
-    newbasename = get_suitable_basename(newbasename)
+def get_basename(base_attrs):
+    basename = ''
+    if 'artist' in base_attrs:
+        basename += base_attrs['artist']
+    if len(basename) > 0:
+        basename += ' - '
+    basename += base_attrs['album']
+    if "remaster" in base_attrs and len(base_attrs['remaster']) >= 1:
+        basename += " (" + base_attrs['remaster'] + ")"
+    if 'year' in base_attrs:
+        basename += "[" + base_attrs['year'] + "]"
+    if 'media' in base_attrs:
+        basename += "[" + base_attrs['media'] + "]"
+    return basename
+
+
+def get_transcode_dir(flac_dir, output_dir, basename, output_format, no_prompt, base_attrs=None):
+    if base_attrs is not None:
+        if base_attrs['artist'] == 'Various Artists':
+            base_attrs['artist'] = 'VA'
+        newbasename = get_suitable_basename(get_basename(base_attrs) + get_suffix(output_format))
+    else:
+        newbasename = get_suitable_basename(basename + get_suffix(output_format))
 
     if no_prompt:
         if path_length_exceeds_limit(flac_dir, newbasename):
             print "The file paths in this torrent exceed the 180 character limit. \n\
                 The current directory name is: " + get_suitable_basename(newbasename.decode('utf-8'))
-            shortened_basename = basename
+
+            # try smart shortening
+            if base_attrs is not None:
+                # drop remaster
+                if 'remaster' in base_attrs:
+                    del base_attrs['remaster']
+                    newbasename = get_suitable_basename(get_basename(base_attrs) + get_suffix(output_format))
+                    if not path_length_exceeds_limit(flac_dir, newbasename):
+                        print "Auto-shortened directory name: " + newbasename
+                        return os.path.join(output_dir, newbasename)
+                # drop media
+                del base_attrs['media']
+                newbasename = get_suitable_basename(get_basename(base_attrs) + get_suffix(output_format))
+                if not path_length_exceeds_limit(flac_dir, newbasename):
+                    print "Auto-shortened directory name: " + newbasename
+                    return os.path.join(output_dir, newbasename)
+                # drop year
+                del base_attrs['year']
+                newbasename = get_suitable_basename(get_basename(base_attrs) + get_suffix(output_format))
+                if not path_length_exceeds_limit(flac_dir, newbasename):
+                    print "Auto-shortened directory name: " + newbasename
+                    return os.path.join(output_dir, newbasename)
+                # drop artist
+                del base_attrs['artist']
+                newbasename = get_suitable_basename(get_basename(base_attrs) + get_suffix(output_format))
+                if not path_length_exceeds_limit(flac_dir, newbasename):
+                    print "Auto-shortened directory name: " + newbasename
+                    return os.path.join(output_dir, newbasename)
+                # we dropped pretty much everything we could, fall back to dummy shortening
+
+            # dummy shortening
+            shortened_basename = newbasename
             while path_length_exceeds_limit(flac_dir, newbasename):
                 shortened_basename = shortened_basename[:-1]
-                newbasename = get_suitable_basename(get_basename_suffix(shortened_basename, output_format))
+                newbasename = get_suitable_basename(shortened_basename + get_suffix(output_format))
             print "Auto-shortened directory name: " + newbasename
-
     else:
         while path_length_exceeds_limit(flac_dir, newbasename):
             newbasename = get_suitable_basename(raw_input("The file paths in this torrent exceed the 180 character limit. \n\
@@ -286,7 +336,7 @@ def get_transcode_dir(flac_dir, output_dir, basename, output_format, resample, n
     return os.path.join(output_dir, newbasename)
 
 
-def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None, no_prompt=False):
+def transcode_release(flac_dir, output_dir, basename, output_format, max_threads=None, no_prompt=False, base_attrs=None):
     # Transcode a FLAC release into another format.
     flac_dir = os.path.abspath(flac_dir)
     output_dir = os.path.abspath(output_dir)
@@ -305,7 +355,7 @@ def transcode_release(flac_dir, output_dir, basename, output_format, max_threads
     # transcode_dir is a new directory created exclusively for this
     # transcode. Do not change this assumption without considering the
     # consequences!
-    transcode_dir = get_transcode_dir(flac_dir, output_dir, basename, output_format, resample, no_prompt)
+    transcode_dir = get_transcode_dir(flac_dir, output_dir, basename, output_format, no_prompt, base_attrs=base_attrs)
     
     if not os.path.exists(transcode_dir):
         os.makedirs(transcode_dir)
