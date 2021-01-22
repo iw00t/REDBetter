@@ -74,6 +74,20 @@ class TestGetTranscodeDir(unittest.TestCase):
         self.assertEqual(expected, actual)
         shutil.rmtree(dir)
 
+    def test_va_shortened(self):
+        dir = tempfile.mkdtemp('flacdir')
+        flac = open(os.path.join(dir, '1.flac'), 'w')
+        b = {
+            'artist': 'Various Artists',
+            'album': 'Album',
+            'year': '2000',
+            'media': 'CD',
+        }
+        expected = 'VA - Album[2000][CD][V0]'
+        actual = transcode.get_transcode_dir(dir, '', 'ignored', 'V0', True, b)
+        self.assertEqual(expected, actual)
+        shutil.rmtree(dir)
+
 
 if __name__ == '__main__':
     unittest.main()
