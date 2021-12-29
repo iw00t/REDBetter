@@ -1,0 +1,12 @@
+version: '3'
+services:
+  redbetter:
+    build:
+      context: .
+    command:
+      - /app/redactedbetter
+      - --config
+      - /config/config
+      - --cache
+      - /config/cache
+    image: mattrob1nson/redbetter:latest
