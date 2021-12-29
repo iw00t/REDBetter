@@ -151,6 +151,7 @@ def main():
             torrent = [t for t in group['torrents'] if t['id'] == torrentid][0]
 
             artist = "";
+            name = redactedapi.unescape(group['group']['name'])
             if len(group['group']['musicInfo']['artists']) > 1:
                 artist = "Various Artists"
             else:
@@ -161,7 +162,7 @@ def main():
                 year = str(group['group']['year'])
 
             releaseartist = "Release artist(s): %s" % artist
-            releasename   = "Release name     : %s" % redactedapi.unescape(group['group']['name'])
+            releasename   = "Release name     : %s" % name
             releaseyear   = "Release year     : %s" % year
             releaseurl    = "Release URL      : %s" % api.release_url(group, torrent)
 
@@ -174,7 +175,7 @@ def main():
                     print "Path not found - skipping: %s" % flac_file
                     continue
                 flac_dir = os.path.join(data_dir, "%s (%s) [FLAC]" % (
-                redactedapi.unescape(group['group']['name']), group['group']['year']))
+                name, group['group']['year']))
                 if not os.path.exists(flac_dir):
                     os.makedirs(flac_dir)
                 shutil.copy(flac_file, flac_dir)
@@ -245,9 +246,9 @@ def main():
                     tmpdir = tempfile.mkdtemp()
                     try:
                         if len(torrent['remasterTitle']) >= 1:
-                            basename = artist + " - " + group['group']['name'] + " (" + torrent['remasterTitle'] + ") " + "[" + year + "] (" + torrent['media'] + " - "
+                            basename = artist + " - " + name + " (" + torrent['remasterTitle'] + ") " + "[" + year + "] (" + torrent['media'] + " - "
                         else:
-                            basename = artist + " - " + group['group']['name'] + " [" + year + "] (" + torrent['media'] + " - "
+                            basename = artist + " - " + name + " [" + year + "] (" + torrent['media'] + " - "
 
                         transcode_dir = transcode.transcode_release(flac_dir, output_dir, basename, format, max_threads=args.threads)
                         if transcode_dir == False:
