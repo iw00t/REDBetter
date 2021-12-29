@@ -1,0 +1,9 @@
+version: '3'
+services:
+  redbetter:
+    user: '1000:1000'
+    volumes:
+      - ${HOME}/.redactedbetter:/config
+      - /your/real/path:/data
+      - /your/real/path:/output
+      - /your/real/path:/torrents

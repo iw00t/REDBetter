@@ -1,0 +1,5 @@
+version: '3'
+services:
+  redbetter:
+    image: iw00t/redbetter:latest
+    entrypoint: ["/app/redactedbetter", "--config", "/config/config", "--cache", "/config/cache"]

@@ -1,0 +1,10 @@
+[redacted]
+username =
+password =
+data_dir = /data
+output_dir = /output
+torrent_dir = /torrents
+24bit_behaviour = 0
+formats = flac, v0, 320
+piece_length = 18
+# media =

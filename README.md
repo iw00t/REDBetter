@@ -115,6 +115,30 @@ REDBetter caches the results of your transcodes, and will skip any transcodes it
 
 Beware though, this will cause the script to re-check every download as it does on the first run.
 
+### Docker example
+
+~~~
+  $> cp docker-compose.override.example.yml docker-compose.override.yml
+  $> $EDITOR docker-compose.override.yml
+
+    # Change the volume mounts to your custom values
+    # Use your own 'user: uid:gid' pair
+
+  $> mkdir ~/.redactedbetter
+  $> chmod go-rx ~/.redactedbetter
+  $> $EDITOR ~/.redactedbetter/config
+
+    # Configure your username and password. Paths in this configuration file
+    # are valid inside the container, you shouldn't have to change them if you
+    # properly configured the volumes previously. (docker-compose.override.yml)
+
+  # Without arguments
+  $> docker-compose run --rm redbetter
+  
+  # With arguments
+  $> docker-compose run --rm redbetter -U http://redacted.ch/torrents.php?id=1000\&torrentid=1000000
+~~~
+
 ## Bugs and feature requests
 
 If you have any issues using the script, or would like to suggest a feature, feel free to open an issue in the issue tracker, *provided that you have searched for similar issues already*.
